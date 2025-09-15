@@ -7,6 +7,11 @@ import ArticleDetail from './pages/ArticleDetail';
 import ArticleEdit from './pages/ArticleEdit';
 import Categories from './pages/Categories';
 import Settings from './pages/Settings';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import { AuthProvider } from './contexts/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
+import FirstTimeSetup from './components/FirstTimeSetup';
 
 function App() {
   const { theme } = useTheme();
@@ -14,17 +19,44 @@ function App() {
   return (
     <div className={`min-h-screen ${theme === 'dark' ? 'dark' : ''}`}>
       <Router>
-        <Layout>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/article/:id" element={<ArticleDetail />} />
-            <Route path="/edit/:id?" element={<ArticleEdit />} />
-            <Route path="/categories" element={<Categories />} />
-            <Route path="/settings" element={<Settings />} />
-          </Routes>
-        </Layout>
+        <AuthProvider>
+          <FirstTimeSetup>
+            <Layout>
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/article/:id" element={<ArticleDetail />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route 
+                  path="/edit/:id?" 
+                  element={
+                    <ProtectedRoute>
+                      <ArticleEdit />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/categories" 
+                  element={
+                    <ProtectedRoute>
+                      <Categories />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/settings" 
+                  element={
+                    <ProtectedRoute>
+                      <Settings />
+                    </ProtectedRoute>
+                  } 
+                />
+              </Routes>
+            </Layout>
+            <Toaster position="top-right" richColors />
+          </FirstTimeSetup>
+        </AuthProvider>
       </Router>
-      <Toaster position="top-right" richColors />
     </div>
   );
 }

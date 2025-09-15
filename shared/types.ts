@@ -3,6 +3,64 @@
 // 文章状态
 export type ArticleStatus = 'draft' | 'published' | 'archived';
 
+// 用户角色
+export type UserRole = 'admin' | 'editor';
+
+// 用户接口
+export interface User {
+  id: number;
+  username: string;
+  email?: string;
+  display_name?: string;
+  avatar_url?: string;
+  role: UserRole;
+  is_active: boolean;
+  last_login_at?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// 用户会话接口
+export interface UserSession {
+  id: number;
+  user_id: number;
+  token_hash: string;
+  expires_at: string;
+  ip_address?: string;
+  user_agent?: string;
+  created_at: string;
+}
+
+// 登录请求
+export interface LoginRequest {
+  username: string;
+  password: string;
+}
+
+// 注册请求
+export interface RegisterRequest {
+  username: string;
+  password: string;
+  email?: string;
+  display_name?: string;
+}
+
+// 认证响应
+export interface AuthResponse {
+  user: User;
+  token: string;
+  expires_at: string;
+}
+
+// JWT载荷
+export interface JWTPayload {
+  userId: number;
+  username: string;
+  role: UserRole;
+  iat: number;
+  exp?: number; // 可选，由JWT库自动处理
+}
+
 // 分类接口
 export interface Category {
   id: number;

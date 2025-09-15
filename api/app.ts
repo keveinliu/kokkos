@@ -11,7 +11,7 @@ import multer from 'multer';
 
 // CommonJS模块中__dirname已经可用
 import database from './database/database';
-import authRoutes from './routes/auth.js';
+import authRoutes from './routes/auth';
 import articlesRouter from './routes/articles';
 import categoriesRouter from './routes/categories';
 import tagsRouter from './routes/tags';

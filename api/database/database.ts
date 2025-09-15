@@ -1,6 +1,8 @@
 import Database from 'better-sqlite3';
-import path from 'path';
 import fs from 'fs';
+import path from 'path';
+// 在CommonJS环境中，__dirname已经可用
+// const __dirname = __dirname; // 这行不需要，__dirname已经是全局变量
 import type { Article, Category, Tag, ArticleStatus } from '../../shared/types';
 
 // CommonJS模块中__dirname已经可用

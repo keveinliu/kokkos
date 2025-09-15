@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useTheme } from '../hooks/useTheme';
+import { useAuth } from '../contexts/AuthContext';
 import { settingsApi } from '../services/api';
-import { Home, FileText, Tag, Folder, Settings, Sun, Moon } from 'lucide-react';
+import { Home, FileText, Tag, Folder, Settings, Sun, Moon, User, LogOut, LogIn } from 'lucide-react';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -43,6 +44,56 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       return location.pathname === '/';
     }
     return location.pathname.startsWith(path);
+  };
+
+  // 用户菜单组件
+  const UserMenu: React.FC = () => {
+    const { user, isAuthenticated, logout } = useAuth();
+    const [showDropdown, setShowDropdown] = useState(false);
+
+    if (!isAuthenticated) {
+      return (
+        <Link
+          to="/login"
+          className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors"
+        >
+          <LogIn className="w-4 h-4 mr-2" />
+          登录
+        </Link>
+      );
+    }
+
+    return (
+      <div className="relative">
+        <button
+          onClick={() => setShowDropdown(!showDropdown)}
+          className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+        >
+          <User className="w-4 h-4 mr-2" />
+          {user?.username}
+        </button>
+
+        {showDropdown && (
+          <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 z-50">
+            <div className="py-1">
+              <div className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
+                {user?.email}
+              </div>
+              <button
+                onClick={() => {
+                  logout();
+                  setShowDropdown(false);
+                }}
+                className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors"
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                退出登录
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    );
   };
 
   return (
@@ -103,7 +154,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               {/* 面包屑导航可以在这里添加 */}
             </div>
             <div className="flex items-center space-x-4">
-              {/* 用户信息或其他操作按钮可以在这里添加 */}
+              <UserMenu />
             </div>
           </div>
         </header>

@@ -17,13 +17,17 @@
     "check": "tsc --noEmit"
   },
   "dependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/jsonwebtoken": "^9.0.10",
     "@uiw/react-md-editor": "^4.0.4",
+    "bcryptjs": "^3.0.2",
     "better-sqlite3": "^12.2.0",
     "clsx": "^2.1.1",
     "cors": "^2.8.5",
     "dotenv": "^17.2.1",
     "express": "^4.21.2",
     "http-proxy-middleware": "^3.0.5",
+    "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.511.0",
     "multer": "^1.4.5-lts.1",
     "react": "^18.3.1",

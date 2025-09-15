@@ -4,6 +4,7 @@ import path from 'path';
 import fs from 'fs';
 import { promisify } from 'util';
 import crypto from 'crypto';
+import { authenticateToken } from '../middleware/auth';
 
 const router = express.Router();
 const writeFile = promisify(fs.writeFile);
@@ -60,7 +61,7 @@ const generateFileName = (originalName: string): string => {
 };
 
 // 上传单个图片
-router.post('/upload', upload.single('image'), async (req, res) => {
+router.post('/upload', authenticateToken, upload.single('image'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ success: false, message: '没有上传文件' });
@@ -113,7 +114,7 @@ router.post('/upload', upload.single('image'), async (req, res) => {
 });
 
 // 批量上传图片
-router.post('/upload-multiple', upload.array('images', 10), async (req, res) => {
+router.post('/upload-multiple', authenticateToken, upload.array('images', 10), async (req, res) => {
   try {
     const files = req.files as Express.Multer.File[];
     
@@ -264,7 +265,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // 删除图片
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', authenticateToken, async (req, res) => {
   try {
     const db = (req as any).db;
     const { id } = req.params;
@@ -296,7 +297,7 @@ router.delete('/:id', async (req, res) => {
 });
 
 // 批量删除图片
-router.post('/batch-delete', async (req, res) => {
+router.post('/batch-delete', authenticateToken, async (req, res) => {
   try {
     const db = (req as any).db;
     const { ids } = req.body;

@@ -28,7 +28,7 @@ function fixImportPaths(filePath) {
   let content = fs.readFileSync(filePath, 'utf8');
   
   // 修复相对路径导入，添加 .cjs 扩展名
-  content = content.replace(/require\(["'](\.\/.+?)(["'])\)/g, (match, path, quote) => {
+  content = content.replace(/require\(["'](\.\.?\/.*?)(["'])\)/g, (match, path, quote) => {
     // 如果路径已经有扩展名，先移除
     const cleanPath = path.replace(/\.(js|cjs)$/, '');
     return `require(${quote}${cleanPath}.cjs${quote})`;

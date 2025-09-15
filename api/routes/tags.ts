@@ -1,5 +1,7 @@
 import express from 'express';
 import type { Tag } from '../../shared/types';
+import { authenticateToken } from '../middleware/auth';
+import { authenticateAdmin } from './auth';
 
 const router = express.Router();
 
@@ -69,7 +71,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // 创建标签
-router.post('/', async (req, res) => {
+router.post('/', authenticateAdmin, async (req, res) => {
   try {
     const db = (req as any).db;
     const { name, color, description } = req.body;
@@ -118,7 +120,7 @@ router.post('/', async (req, res) => {
 });
 
 // 更新标签
-router.put('/:id', async (req, res) => {
+router.put('/:id', authenticateAdmin, async (req, res) => {
   try {
     const db = (req as any).db;
     const { id } = req.params;
@@ -160,7 +162,7 @@ router.put('/:id', async (req, res) => {
 });
 
 // 删除标签
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', authenticateAdmin, async (req, res) => {
   try {
     const db = (req as any).db;
     const { id } = req.params;
@@ -185,7 +187,7 @@ router.delete('/:id', async (req, res) => {
 });
 
 // 批量删除标签
-router.post('/batch-delete', async (req, res) => {
+router.post('/batch-delete', authenticateAdmin, async (req, res) => {
   try {
     const db = (req as any).db;
     const { ids } = req.body;

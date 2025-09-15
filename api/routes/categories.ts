@@ -1,5 +1,7 @@
 import express from 'express';
 import type { Category } from '../../shared/types';
+import { authenticateToken } from '../middleware/auth';
+import { authenticateAdmin } from './auth';
 
 const router = express.Router();
 
@@ -57,7 +59,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // 创建分类
-router.post('/', async (req, res) => {
+router.post('/', authenticateAdmin, async (req, res) => {
   try {
     const db = (req as any).db;
     const { name, description, color, sort_order = 0 } = req.body;
@@ -94,7 +96,7 @@ router.post('/', async (req, res) => {
 });
 
 // 更新分类
-router.put('/:id', async (req, res) => {
+router.put('/:id', authenticateAdmin, async (req, res) => {
   try {
     const db = (req as any).db;
     const { id } = req.params;
@@ -137,7 +139,7 @@ router.put('/:id', async (req, res) => {
 });
 
 // 删除分类
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', authenticateAdmin, async (req, res) => {
   try {
     const db = (req as any).db;
     const { id } = req.params;
@@ -191,7 +193,7 @@ router.delete('/:id', async (req, res) => {
 });
 
 // 批量更新分类排序
-router.post('/reorder', async (req, res) => {
+router.post('/reorder', authenticateAdmin, async (req, res) => {
   try {
     const db = (req as any).db;
     const { categories } = req.body;

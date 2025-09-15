@@ -1,5 +1,7 @@
 import express from 'express';
 import type { Article, ArticleStatus } from '../../shared/types';
+import { authenticateToken, optionalAuth } from '../middleware/auth';
+import { authenticateAdmin } from './auth';
 
 const router = express.Router();
 
@@ -164,7 +166,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // 创建文章
-router.post('/', async (req, res) => {
+router.post('/', authenticateAdmin, async (req, res) => {
   try {
     const db = (req as any).db;
     const {
@@ -224,7 +226,7 @@ router.post('/', async (req, res) => {
 });
 
 // 更新文章
-router.put('/:id', async (req, res) => {
+router.put('/:id', authenticateAdmin, async (req, res) => {
   try {
     const db = (req as any).db;
     const { id } = req.params;
@@ -290,7 +292,7 @@ router.put('/:id', async (req, res) => {
 });
 
 // 删除文章
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', authenticateAdmin, async (req, res) => {
   try {
     const db = (req as any).db;
     const { id } = req.params;
@@ -315,7 +317,7 @@ router.delete('/:id', async (req, res) => {
 });
 
 // 批量操作
-router.post('/batch', async (req, res) => {
+router.post('/batch', authenticateAdmin, async (req, res) => {
   try {
     const db = (req as any).db;
     const { action, ids } = req.body;
