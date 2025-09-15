@@ -1,0 +1,20 @@
+{
+  "version": "1.0.0",
+  "timestamp": "2025-01-12T13:22:00.000Z",
+  "data": {
+    "settings": [
+      {
+        "key": "test_setting",
+        "value": "test_value",
+        "type": "string",
+        "description": "测试设置项",
+        "created_at": "2025-01-12T13:22:00.000Z",
+        "updated_at": "2025-01-12T13:22:00.000Z"
+      }
+    ],
+    "categories": [],
+    "tags": [],
+    "articles": [],
+    "article_tags": []
+  }
+}
