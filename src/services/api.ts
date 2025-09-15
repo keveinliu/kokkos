@@ -4,25 +4,40 @@ import type { Article, Category, Tag, ArticleStatus } from '../../shared/types';
 const API_BASE_URL = 'http://localhost:3001/api';
 
 // 通用请求函数
-const request = async (url: string, options: RequestInit = {}) => {
-  const response = await fetch(`${API_BASE_URL}${url}`, {
+const request = async <T>(url: string, options: RequestInit = {}): Promise<T> => {
+  // 获取存储的token
+  const token = localStorage.getItem('token');
+  
+  const config: RequestInit = {
     headers: {
       'Content-Type': 'application/json',
+      ...(token && { Authorization: `Bearer ${token}` }),
       ...options.headers,
     },
     ...options,
-  });
+  };
 
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: '请求失败' }));
-    throw new Error(error.message || '请求失败');
+  const response = await fetch(`${API_BASE_URL}${url}`, config);
+  
+  // 处理401未授权错误（token过期或无效）
+  if (response.status === 401) {
+    // 清除无效token
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    // 跳转到登录页面
+    window.location.href = '/login';
+    throw new Error('Token expired or invalid');
   }
-
+  
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+  
   return response.json();
 };
 
-// 文章相关 API
-export const articleApi = {
+// 文章相关API
+export const articlesApi = {
   // 获取文章列表
   getList: async (params: {
     page?: number;
@@ -40,12 +55,12 @@ export const articleApi = {
       }
     });
     
-    return request(`/articles?${searchParams.toString()}`);
+    return request<{ data: any[]; total: number }>(`/articles?${searchParams.toString()}`);
   },
 
   // 获取单篇文章
   getById: async (id: number) => {
-    return request(`/articles/${id}`);
+    return request<{ data: any }>(`/articles/${id}`);
   },
 
   // 创建文章
@@ -114,17 +129,17 @@ export const categoryApi = {
       }
     });
     
-    return request(`/categories?${searchParams.toString()}`);
+    return request<any>(`/categories?${searchParams.toString()}`);
   },
 
   // 获取单个分类
   getById: async (id: number) => {
-    return request(`/categories/${id}`);
+    return request<any>(`/categories/${id}`);
   },
 
   // 创建分类
   create: async (data: Partial<Category>) => {
-    return request('/categories', {
+    return request<any>('/categories', {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -132,7 +147,7 @@ export const categoryApi = {
 
   // 更新分类
   update: async (id: number, data: Partial<Category>) => {
-    return request(`/categories/${id}`, {
+    return request<any>(`/categories/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data),
     });
@@ -140,14 +155,14 @@ export const categoryApi = {
 
   // 删除分类
   delete: async (id: number) => {
-    return request(`/categories/${id}`, {
+    return request<any>(`/categories/${id}`, {
       method: 'DELETE',
     });
   },
 
   // 批量更新排序
   batchUpdateSort: async (updates: { id: number; sort_order: number }[]) => {
-    return request('/categories/batch-sort', {
+    return request<any>('/categories/batch-sort', {
       method: 'POST',
       body: JSON.stringify({ updates }),
     });
@@ -155,76 +170,50 @@ export const categoryApi = {
 
   // 获取分类统计
   getStats: async (id: number) => {
-    return request(`/categories/${id}/stats`);
+    return request<any>(`/categories/${id}/stats`);
   },
 };
 
-// 标签相关 API
-export const tagApi = {
-  // 获取标签列表
-  getList: async (params: {
-    include_count?: boolean;
-    search?: string;
-  } = {}) => {
+// 标签相关API
+export const tagsApi = {
+  // 获取所有标签
+  getAll: () => request<any>('/tags'),
+
+  // 获取标签列表（带参数）
+  getList: (params: { include_count?: boolean } = {}) => {
     const searchParams = new URLSearchParams();
     Object.entries(params).forEach(([key, value]) => {
       if (value !== undefined && value !== null) {
         searchParams.append(key, String(value));
       }
     });
-    
-    return request(`/tags?${searchParams.toString()}`);
+    return request<any>(`/tags?${searchParams.toString()}`);
   },
 
-  // 获取单个标签
-  getById: async (id: number) => {
-    return request(`/tags/${id}`);
-  },
+  // 根据ID获取标签
+  getById: (id: string) => request<any>(`/tags/${id}`),
 
   // 创建标签
-  create: async (data: Partial<Tag>) => {
-    return request('/tags', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  },
+  create: (tag: any) => request<any>('/tags', {
+    method: 'POST',
+    body: JSON.stringify(tag),
+  }),
 
   // 更新标签
-  update: async (id: number, data: Partial<Tag>) => {
-    return request(`/tags/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    });
-  },
+  update: (id: string, tag: any) => request<any>(`/tags/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(tag),
+  }),
 
   // 删除标签
-  delete: async (id: number) => {
-    return request(`/tags/${id}`, {
-      method: 'DELETE',
-    });
-  },
-
-  // 批量删除标签
-  batchDelete: async (ids: number[]) => {
-    return request('/tags/batch-delete', {
-      method: 'POST',
-      body: JSON.stringify({ ids }),
-    });
-  },
-
-  // 获取标签统计
-  getStats: async (id: number) => {
-    return request(`/tags/${id}/stats`);
-  },
+  delete: (id: string) => request<any>(`/tags/${id}`, {
+    method: 'DELETE',
+  }),
 
   // 获取热门标签
-  getPopular: async (limit: number = 10) => {
-    return request(`/tags/popular/list?limit=${limit}`);
-  },
-
-  // 搜索标签
-  search: async (keyword: string, limit: number = 20) => {
-    return request(`/tags/search/${encodeURIComponent(keyword)}?limit=${limit}`);
+  getPopular: (limit?: number) => {
+    const params = limit ? `?limit=${limit}` : '';
+    return request<any>(`/tags/popular${params}`);
   },
 };
 
@@ -270,10 +259,9 @@ export const imageApi = {
 
   // 获取图片列表
   getList: async (params: {
+    article_id?: number;
     page?: number;
     limit?: number;
-    search?: string;
-    mime_type?: string;
   } = {}) => {
     const searchParams = new URLSearchParams();
     Object.entries(params).forEach(([key, value]) => {
@@ -282,7 +270,7 @@ export const imageApi = {
       }
     });
     
-    return request(`/images?${searchParams.toString()}`);
+    return request<{ images: any[] }>(`/images?${searchParams.toString()}`);
   },
 
   // 获取单个图片信息
@@ -315,17 +303,17 @@ export const imageApi = {
 export const settingsApi = {
   // 获取所有设置
   getAll: async () => {
-    return request('/settings');
+    return request<any>('/settings');
   },
 
   // 获取单个设置
   get: async (key: string) => {
-    return request(`/settings/${key}`);
+    return request<any>(`/settings/${key}`);
   },
 
   // 更新设置
   update: async (key: string, value: any, description?: string) => {
-    return request(`/settings/${key}`, {
+    return request<any>(`/settings/${key}`, {
       method: 'PUT',
       body: JSON.stringify({ value, description }),
     });
@@ -333,7 +321,7 @@ export const settingsApi = {
 
   // 批量更新设置
   batchUpdate: async (settings: Record<string, { value: any; description?: string }>) => {
-    return request('/settings/batch-update', {
+    return request<any>('/settings/batch-update', {
       method: 'POST',
       body: JSON.stringify({ settings }),
     });
@@ -341,7 +329,7 @@ export const settingsApi = {
 
   // 数据备份
   backup: async (includeImages: boolean = false) => {
-    return request('/settings/backup', {
+    return request<any>('/settings/backup', {
       method: 'POST',
       body: JSON.stringify({ include_images: includeImages }),
     });
@@ -349,7 +337,7 @@ export const settingsApi = {
 
   // 数据恢复
   restore: async (backupFile: string, clearExisting: boolean = false) => {
-    return request('/settings/restore', {
+    return request<any>('/settings/restore', {
       method: 'POST',
       body: JSON.stringify({ backup_file: backupFile, clear_existing: clearExisting }),
     });
@@ -357,12 +345,12 @@ export const settingsApi = {
 
   // 获取备份文件列表
   getBackups: async () => {
-    return request('/settings/backups/list');
+    return request<any>('/settings/backups/list');
   },
 
   // 删除备份文件
   deleteBackup: async (filename: string) => {
-    return request(`/settings/backups/${filename}`, {
+    return request<any>(`/settings/backups/${filename}`, {
       method: 'DELETE',
     });
   },
@@ -370,9 +358,9 @@ export const settingsApi = {
 
 // 导出所有 API
 export default {
-  article: articleApi,
+  articles: articlesApi,
   category: categoryApi,
-  tag: tagApi,
+  tags: tagsApi,
   image: imageApi,
   settings: settingsApi,
 };

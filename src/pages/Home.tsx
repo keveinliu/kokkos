@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, Calendar, Eye, Tag, Plus, Filter } from 'lucide-react';
 import type { Article, Category, Tag as TagType } from '../../shared/types';
-import { articleApi, categoryApi, tagApi, settingsApi } from '../services/api';
+import { articlesApi, categoryApi, tagsApi, settingsApi } from '../services/api';
 
 const Home: React.FC = () => {
   const [articles, setArticles] = useState<Article[]>([]);
@@ -61,7 +61,7 @@ const Home: React.FC = () => {
       if (selectedCategory) params.category_id = selectedCategory;
       if (selectedTag) params.tag_id = selectedTag;
       
-      const data = await articleApi.getList(params);
+      const data = await articlesApi.getList(params);
       setArticles(data.data || []);
       setTotalPages(Math.ceil((data.total || 0) / postsPerPage));
     } catch (error) {
@@ -82,7 +82,7 @@ const Home: React.FC = () => {
 
   const fetchTags = async () => {
     try {
-      const data = await tagApi.getList({ include_count: true });
+      const data = await tagsApi.getList({ include_count: true });
       setTags(data.data || []);
     } catch (error) {
       console.error('加载标签失败:', error);

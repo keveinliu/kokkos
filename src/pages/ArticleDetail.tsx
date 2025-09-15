@@ -4,7 +4,7 @@ import { ArrowLeft, Calendar, Eye, Tag, Edit } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import type { Article } from '../../shared/types';
-import { articleApi } from '../services/api';
+import { articlesApi } from '../services/api';
 
 const ArticleDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -22,7 +22,7 @@ const ArticleDetail: React.FC = () => {
   const fetchArticle = async (articleId: string) => {
     try {
       setLoading(true);
-      const data = await articleApi.getById(parseInt(articleId));
+      const data = await articlesApi.getById(parseInt(articleId));
       setArticle(data.data);
     } catch (err) {
       setError(err instanceof Error ? err.message : '加载失败');

@@ -31,12 +31,12 @@ const ImageManager: React.FC<ImageManagerProps> = ({ isOpen, onClose, onSelectIm
   }, [isOpen]);
 
   const loadImages = async () => {
-    setLoading(true);
     try {
-      const response = await imageApi.getList({ limit: 50 });
-      setImages(response.data.images || []);
+      setLoading(true);
+      const response = await imageApi.getList();
+      setImages(response.images || []);
     } catch (error) {
-      console.error('加载图片失败:', error);
+      console.error('Failed to load images:', error);
       toast.error('加载图片失败');
     } finally {
       setLoading(false);

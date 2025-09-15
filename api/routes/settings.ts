@@ -4,7 +4,7 @@ import path from 'path';
 import multer from 'multer';
 import { promisify } from 'util';
 import database from '../database/database';
-import { authenticateToken } from '../middleware/auth';
+import { authenticateToken, requireRole } from '../middleware/auth';
 
 const router = express.Router();
 const readFile = promisify(fs.readFile);
@@ -110,7 +110,7 @@ router.get('/:key', async (req, res) => {
 });
 
 // 更新设置
-router.put('/:key', authenticateToken, async (req, res) => {
+router.put('/:key', authenticateToken, requireRole(['admin']), async (req, res) => {
   try {
     const db = (req as any).db;
     const { key } = req.params;
@@ -152,7 +152,7 @@ router.put('/:key', authenticateToken, async (req, res) => {
 });
 
 // 批量更新设置
-router.post('/batch-update', authenticateToken, async (req, res) => {
+router.post('/batch-update', authenticateToken, requireRole(['admin']), async (req, res) => {
   try {
     const db = (req as any).db;
     const { settings } = req.body;
@@ -209,7 +209,7 @@ router.post('/batch-update', authenticateToken, async (req, res) => {
 });
 
 // 数据备份
-router.post('/backup', authenticateToken, async (req, res) => {
+router.post('/backup', authenticateToken, requireRole(['admin']), async (req, res) => {
   try {
     const db = (req as any).db;
     const { include_images = false } = req.body;
@@ -262,7 +262,7 @@ router.post('/backup', authenticateToken, async (req, res) => {
 });
 
 // 数据恢复
-router.post('/restore', authenticateToken, upload.single('backup'), async (req, res) => {
+router.post('/restore', authenticateToken, requireRole(['admin']), upload.single('backup'), async (req, res) => {
   try {
     const db = (req as any).db;
     const file = req.file;
@@ -394,7 +394,7 @@ router.post('/restore', authenticateToken, upload.single('backup'), async (req, 
 });
 
 // 获取备份文件列表
-router.get('/backups/list', authenticateToken, async (req, res) => {
+router.get('/backups/list', authenticateToken, requireRole(['admin']), async (req, res) => {
   try {
     const backupDir = process.env.BACKUPS_PATH || path.join(process.cwd(), 'backups');
     
@@ -427,7 +427,7 @@ router.get('/backups/list', authenticateToken, async (req, res) => {
 });
 
 // 下载备份文件
-router.get('/backups/download/:filename', authenticateToken, async (req, res) => {
+router.get('/backups/download/:filename', authenticateToken, requireRole(['admin']), async (req, res) => {
   try {
     const { filename } = req.params;
     const backupPath = path.join(process.env.BACKUPS_PATH || path.join(process.cwd(), 'backups'), filename);
@@ -455,7 +455,7 @@ router.get('/backups/download/:filename', authenticateToken, async (req, res) =>
 });
 
 // 删除备份文件
-router.delete('/backups/:filename', authenticateToken, async (req, res) => {
+router.delete('/backups/:filename', authenticateToken, requireRole(['admin']), async (req, res) => {
   try {
     const { filename } = req.params;
     const backupPath = path.join(process.env.BACKUPS_PATH || path.join(process.cwd(), 'backups'), filename);

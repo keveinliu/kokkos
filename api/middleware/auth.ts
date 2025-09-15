@@ -26,7 +26,7 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
     });
   }
 
-  const jwtSecret = process.env.JWT_SECRET || 'your-secret-key';
+  const jwtSecret = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 
   jwt.verify(token, jwtSecret, (err, decoded) => {
     if (err) {
@@ -53,7 +53,7 @@ export const optionalAuth = (req: Request, res: Response, next: NextFunction) =>
     return next();
   }
 
-  const jwtSecret = process.env.JWT_SECRET || 'your-secret-key';
+  const jwtSecret = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 
   jwt.verify(token, jwtSecret, (err, decoded) => {
     if (!err) {

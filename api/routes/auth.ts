@@ -66,8 +66,7 @@ export function requireAdmin(req: Request, res: Response, next: any) {
 
 // 组合中间件：认证 + 管理员权限
 export function authenticateAdmin(req: Request, res: Response, next: any) {
-  authenticateToken(req, res, (err: any) => {
-    if (err) return next(err);
+  authenticateToken(req, res, () => {
     requireAdmin(req, res, next);
   });
 }

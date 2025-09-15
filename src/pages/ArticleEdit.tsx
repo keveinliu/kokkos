@@ -4,7 +4,7 @@ import { Save, ArrowLeft, Eye, Upload, Image as ImageIcon, FolderOpen } from 'lu
 import MDEditor from '@uiw/react-md-editor';
 import { toast } from 'sonner';
 import type { Article, Category, Tag, ArticleInput } from '../../shared/types';
-import { articleApi, categoryApi, tagApi, imageApi } from '../services/api';
+import { articlesApi, categoryApi, tagsApi, imageApi } from '../services/api';
 import ImageManager from '../components/ImageManager';
 
 const ArticleEdit: React.FC = () => {
@@ -45,7 +45,7 @@ const ArticleEdit: React.FC = () => {
   const fetchArticle = async (articleId: string) => {
     try {
       setLoading(true);
-      const data = await articleApi.getById(parseInt(articleId));
+      const data = await articlesApi.getById(parseInt(articleId));
       const articleData = data.data;
       setArticle({
         title: articleData.title,
@@ -74,7 +74,7 @@ const ArticleEdit: React.FC = () => {
 
   const fetchTags = async () => {
     try {
-      const data = await tagApi.getList();
+      const data = await tagsApi.getList();
       setTags(data.data || []);
     } catch (error) {
       console.error('加载标签失败:', error);
@@ -97,12 +97,12 @@ const ArticleEdit: React.FC = () => {
 
       let data;
       if (isEditing && id) {
-        data = await articleApi.update(parseInt(id), payload);
+        data = await articlesApi.update(parseInt(id), payload);
         // 更新成功后显示成功提示并跳转
         alert('文章更新成功！');
         navigate(`/article/${id}`);
       } else {
-        data = await articleApi.create(payload);
+        data = await articlesApi.create(payload);
         // 创建成功后跳转到新文章页面
         navigate(`/article/${data.data.id}`);
       }
