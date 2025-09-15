@@ -214,7 +214,7 @@ router.post('/backup', async (req, res) => {
     const { include_images = false } = req.body;
     
     // 确保备份目录存在
-    const backupDir = path.join(process.cwd(), 'backups');
+    const backupDir = process.env.BACKUPS_PATH || path.join(process.cwd(), 'backups');
     try {
       await stat(backupDir);
     } catch {
@@ -395,7 +395,7 @@ router.post('/restore', upload.single('backup'), async (req, res) => {
 // 获取备份文件列表
 router.get('/backups/list', async (req, res) => {
   try {
-    const backupDir = path.join(process.cwd(), 'backups');
+    const backupDir = process.env.BACKUPS_PATH || path.join(process.cwd(), 'backups');
     
     try {
       await stat(backupDir);
@@ -429,7 +429,7 @@ router.get('/backups/list', async (req, res) => {
 router.get('/backups/download/:filename', async (req, res) => {
   try {
     const { filename } = req.params;
-    const backupPath = path.join(process.cwd(), 'backups', filename);
+    const backupPath = path.join(process.env.BACKUPS_PATH || path.join(process.cwd(), 'backups'), filename);
     
     // 检查文件是否存在
     try {
@@ -457,7 +457,7 @@ router.get('/backups/download/:filename', async (req, res) => {
 router.delete('/backups/:filename', async (req, res) => {
   try {
     const { filename } = req.params;
-    const backupPath = path.join(process.cwd(), 'backups', filename);
+    const backupPath = path.join(process.env.BACKUPS_PATH || path.join(process.cwd(), 'backups'), filename);
     
     // 检查文件是否存在
     try {

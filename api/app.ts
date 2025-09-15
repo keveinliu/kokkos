@@ -36,7 +36,9 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // 静态文件服务 - 必须在API路由之前
-app.use('/uploads', express.static(path.join(__dirname, '../../uploads')));
+// 动态计算uploads目录路径，支持不同的部署环境
+const uploadsPath = process.env.UPLOADS_PATH || path.join(process.cwd(), 'uploads');
+app.use('/uploads', express.static(uploadsPath));
 
 // 将数据库实例挂载到请求对象
 app.use((req: any, res, next) => {

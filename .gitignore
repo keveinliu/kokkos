@@ -8,8 +8,8 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
-dist
-dist-ssr
+dist/*
+dist-ssr/*
 *.local
 
 # Editor directories and files
@@ -25,8 +25,8 @@ dist-ssr
 .vite
 
 backups/*
+deploy-package/*
 dist-api/*
-dist-electron/*
 release/*
 uploads/*
 data/*

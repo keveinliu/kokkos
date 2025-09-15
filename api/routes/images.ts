@@ -33,7 +33,7 @@ const upload = multer({
 
 // 确保上传目录存在
 const ensureUploadDir = async () => {
-  const uploadDir = path.join(process.cwd(), 'uploads');
+  const uploadDir = process.env.UPLOADS_PATH || path.join(process.cwd(), 'uploads');
   const imagesDir = path.join(uploadDir, 'images');
   
   try {

@@ -5,8 +5,8 @@ import type { Article, Category, Tag, ArticleStatus } from '../../shared/types';
 
 // CommonJS模块中__dirname已经可用
 
-// 数据库文件路径
-const DB_PATH = path.join(process.cwd(), 'data', 'blog.db');
+// 数据库文件路径 - 支持环境变量配置
+const DB_PATH = process.env.DB_PATH || path.join(process.cwd(), 'data', 'blog.db');
 
 // 确保数据目录存在
 const dataDir = path.dirname(DB_PATH);
