@@ -80,31 +80,5 @@ CREATE INDEX IF NOT EXISTS idx_articles_created ON articles(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_article_tags_article ON article_tags(article_id);
 CREATE INDEX IF NOT EXISTS idx_article_tags_tag ON article_tags(tag_id);
 
--- 插入默认分类
-INSERT OR IGNORE INTO categories (name, description, color) VALUES 
-('技术', '技术相关文章', '#007AFF'),
-('生活', '生活感悟和日常', '#34C759'),
-('思考', '个人思考和观点', '#FF9500'),
-('随笔', '随意记录的文字', '#AF52DE');
-
--- 插入默认标签
-INSERT OR IGNORE INTO tags (name, color) VALUES 
-('JavaScript', '#F7DF1E'),
-('React', '#61DAFB'),
-('TypeScript', '#3178C6'),
-('Node.js', '#339933'),
-('前端', '#FF6B6B'),
-('后端', '#4ECDC4'),
-('数据库', '#336791'),
-('随想', '#FFB6C1');
-
--- 插入默认系统设置
-INSERT OR IGNORE INTO settings (key, value, description) VALUES 
-('site_title', '芥子博客', '网站标题'),
-('site_description', '一个简洁优雅的个人博客', '网站描述'),
-('posts_per_page', '10', '每页文章数量'),
-('theme_color', '#007AFF', '主题色'),
-('backup_enabled', 'true', '是否启用自动备份'),
-('backup_interval', '24', '备份间隔（小时）'),
-('author_name', '博主', '作者姓名'),
-('author_email', 'admin@example.com', '作者邮箱');
+-- 注意：启动时只创建表结构，不插入测试数据
+-- 如需初始化数据，请通过管理界面或API手动添加

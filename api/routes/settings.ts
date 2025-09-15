@@ -248,16 +248,12 @@ router.post('/backup', async (req, res) => {
     // 写入备份文件
     await writeFile(backupPath, JSON.stringify(backup, null, 2), 'utf8');
 
-    res.json({
-      success: true,
-      data: {
-        filename: backupFileName,
-        path: backupPath,
-        size: (await stat(backupPath)).size,
-        timestamp: backup.timestamp
-      },
-      message: '数据备份成功'
-    });
+    // 设置响应头，让浏览器下载文件
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Content-Disposition', `attachment; filename="${backupFileName}"`);
+    
+    // 直接返回备份数据供下载
+    res.send(JSON.stringify(backup, null, 2));
   } catch (error) {
     console.error('数据备份失败:', error);
     res.status(500).json({ success: false, message: '数据备份失败' });
@@ -338,13 +334,13 @@ router.post('/restore', upload.single('backup'), async (req, res) => {
           await db.run(`
             INSERT OR REPLACE INTO articles 
             (id, title, content, excerpt, status, category_id, view_count, 
-             featured_image, created_at, updated_at, published_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+             is_featured, meta_title, meta_description, slug, created_at, updated_at, published_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
           `, [
             article.id, article.title, article.content, article.excerpt,
             article.status, article.category_id, article.view_count,
-            article.featured_image, article.created_at, article.updated_at,
-            article.published_at
+            article.is_featured, article.meta_title, article.meta_description,
+            article.slug, article.created_at, article.updated_at, article.published_at
           ]);
         }
       }
@@ -426,6 +422,34 @@ router.get('/backups/list', async (req, res) => {
   } catch (error) {
     console.error('获取备份文件列表失败:', error);
     res.status(500).json({ success: false, message: '获取备份文件列表失败' });
+  }
+});
+
+// 下载备份文件
+router.get('/backups/download/:filename', async (req, res) => {
+  try {
+    const { filename } = req.params;
+    const backupPath = path.join(process.cwd(), 'backups', filename);
+    
+    // 检查文件是否存在
+    try {
+      await stat(backupPath);
+    } catch {
+      return res.status(404).json({ success: false, message: '备份文件不存在' });
+    }
+
+    // 设置响应头，让浏览器下载文件
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    
+    // 读取并发送文件内容
+    const { readFile } = require('fs').promises;
+    const fileContent = await readFile(backupPath, 'utf8');
+    
+    res.send(fileContent);
+  } catch (error) {
+    console.error('下载备份文件失败:', error);
+    res.status(500).json({ success: false, message: '下载备份文件失败' });
   }
 });
 
