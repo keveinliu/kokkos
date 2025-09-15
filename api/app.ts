@@ -2,34 +2,39 @@
  * This is a API server
  */
 
-import express, { type Request, type Response, type NextFunction }  from 'express';
-import cors from 'cors';
-import path from 'path';
 import dotenv from 'dotenv';
-import { join } from 'path';
-import multer from 'multer';
-
-// CommonJS模块中__dirname已经可用
-import database from './database/database';
-import authRoutes from './routes/auth';
-import articlesRouter from './routes/articles';
-import categoriesRouter from './routes/categories';
-import tagsRouter from './routes/tags';
-import imagesRouter from './routes/images';
-import settingsRouter from './routes/settings';
-
-// load env
+// 确保在所有其他导入之前加载环境变量
 dotenv.config();
 
+import express from 'express';
+import cors from 'cors';
+import path from 'path';
+import multer from 'multer';
+// 在CommonJS环境中，__dirname和__filename是全局可用的
+// 不需要使用fileURLToPath和import.meta.url
+
+import database from './database/database.js';
+import authRoutes from './routes/auth.js';
+import articlesRouter from './routes/articles.js';
+import categoriesRouter from './routes/categories.js';
+import tagsRouter from './routes/tags.js';
+import imagesRouter from './routes/images.js';
+import settingsRouter from './routes/settings.js';
+
+type Request = import('express').Request;
+type Response = import('express').Response;
+type NextFunction = import('express').NextFunction;
+
 // 数据库初始化
-database.init().then(() => {
+try {
+  database.init();
   console.log('✅ 数据库初始化完成');
-}).catch((error) => {
+} catch (error) {
   console.error('❌ 数据库初始化失败:', error);
   process.exit(1);
-});
+}
 
-const app: express.Application = express();
+const app: import('express').Application = express();
 
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
@@ -87,5 +92,4 @@ app.use((req: Request, res: Response) => {
 });
 
 export default app;
-export { database as db };
-export { app as createApp };
+export { database };

@@ -1,13 +1,24 @@
-import { Router, Request, Response } from 'express';
+import { Router } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import database from '../database/database';
-import type { User, LoginRequest, RegisterRequest, AuthResponse, JWTPayload } from '../../shared/types';
+import database from '../database/database.js';
+// 类型导入
+type User = import('../../shared/types').User;
+type LoginRequest = import('../../shared/types').LoginRequest;
+type RegisterRequest = import('../../shared/types').RegisterRequest;
+type AuthResponse = import('../../shared/types').AuthResponse;
+type JWTPayload = import('../../shared/types').JWTPayload;
+import { authenticateToken } from '../middleware/auth.js';
+
+type Request = any;
+type Response = any;
 
 const router = Router();
 
-// JWT密钥 - 在生产环境中应该使用环境变量
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+// JWT密钥获取函数 - 在运行时获取环境变量
+function getJWTSecret(): string {
+  return process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+}
 const JWT_EXPIRES_IN = '7d';
 
 // 生成JWT token
@@ -18,65 +29,24 @@ function generateToken(user: User): string {
     role: user.role,
     iat: Math.floor(Date.now() / 1000)
   };
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+  return jwt.sign(payload, getJWTSecret(), { expiresIn: JWT_EXPIRES_IN });
 }
 
 // 验证JWT token
-export function verifyToken(token: string): JWTPayload | null {
+function verifyToken(token: string): JWTPayload | null {
   try {
-    return jwt.verify(token, JWT_SECRET) as JWTPayload;
+    return jwt.verify(token, getJWTSecret()) as JWTPayload;
   } catch (error) {
     return null;
   }
 }
 
-// 认证中间件
-export function authenticateToken(req: Request, res: Response, next: any) {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
-
-  if (!token) {
-    return res.status(401).json({ success: false, message: '访问令牌缺失' });
-  }
-
-  const payload = verifyToken(token);
-  if (!payload) {
-    return res.status(403).json({ success: false, message: '访问令牌无效或已过期' });
-  }
-
-  // 将用户信息添加到请求对象
-  (req as any).user = payload;
-  next();
-}
-
-// 管理员权限中间件
-export function requireAdmin(req: Request, res: Response, next: any) {
-  const user = (req as any).user as JWTPayload;
-  
-  if (!user) {
-    return res.status(401).json({ success: false, message: '未认证用户' });
-  }
-  
-  if (user.role !== 'admin') {
-    return res.status(403).json({ success: false, message: '需要管理员权限' });
-  }
-  
-  next();
-}
-
-// 组合中间件：认证 + 管理员权限
-export function authenticateAdmin(req: Request, res: Response, next: any) {
-  authenticateToken(req, res, () => {
-    requireAdmin(req, res, next);
-  });
-}
-
 // 检查是否有用户存在
 router.get('/check-users', async (req: Request, res: Response) => {
   try {
-    await database.init();
-    const userCount = database.get<{ count: number }>('SELECT COUNT(*) as count FROM users');
-    const adminCount = database.get<{ count: number }>('SELECT COUNT(*) as count FROM users WHERE role = ?', ['admin']);
+    database.init();
+    const userCount = database.get('SELECT COUNT(*) as count FROM users');
+    const adminCount = database.get('SELECT COUNT(*) as count FROM users WHERE role = ?', ['admin']);
     
     res.json({
       success: true,
@@ -123,7 +93,7 @@ router.post('/register', async (req: Request, res: Response) => {
       });
     }
 
-    await database.init();
+    database.init();
 
     // 检查用户名是否已存在
     const existingUser = database.get('SELECT id FROM users WHERE username = ?', [username]);
@@ -146,7 +116,7 @@ router.post('/register', async (req: Request, res: Response) => {
     }
 
     // 检查是否已存在管理员用户
-    const adminCount = database.get<{ count: number }>('SELECT COUNT(*) as count FROM users WHERE role = ?', ['admin']);
+    const adminCount = database.get('SELECT COUNT(*) as count FROM users WHERE role = ?', ['admin']);
     const hasAdmin = (adminCount?.count || 0) > 0;
     
     // 确定用户角色：如果没有管理员则创建管理员，否则创建普通用户
@@ -163,7 +133,7 @@ router.post('/register', async (req: Request, res: Response) => {
     );
 
     // 获取创建的用户信息
-    const user = database.get<User>(
+    const user = database.get(
       'SELECT id, username, email, display_name, avatar_url, role, is_active, created_at, updated_at FROM users WHERE id = ?',
       [result.lastInsertRowid]
     );
@@ -212,10 +182,10 @@ router.post('/login', async (req: Request, res: Response) => {
       });
     }
 
-    await database.init();
+    database.init();
 
     // 查找用户
-    const user = database.get<User & { password_hash: string }>(
+    const user = database.get(
       'SELECT * FROM users WHERE username = ? AND is_active = 1',
       [username]
     );
@@ -272,10 +242,10 @@ router.get('/me', authenticateToken, async (req: Request, res: Response) => {
   try {
     const payload = (req as any).user as JWTPayload;
     
-    await database.init();
+    database.init();
     
     // 获取最新的用户信息
-    const user = database.get<User>(
+    const user = database.get(
       'SELECT id, username, email, display_name, avatar_url, role, is_active, last_login_at, created_at, updated_at FROM users WHERE id = ? AND is_active = 1',
       [payload.userId]
     );

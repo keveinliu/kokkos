@@ -1,6 +1,7 @@
 import express from 'express';
-import type { Category } from '../../shared/types';
-import { authenticateToken, requireRole } from '../middleware/auth';
+// 类型导入
+type Category = import('../../shared/types').Category;
+import { authenticateToken, requireRole } from '../middleware/auth.js';
 
 const router = express.Router();
 

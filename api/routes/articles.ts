@@ -1,6 +1,8 @@
 import express from 'express';
-import type { Article, ArticleStatus } from '../../shared/types';
-import { authenticateToken, optionalAuth, requireRole } from '../middleware/auth';
+// 类型导入
+type Article = import('../../shared/types').Article;
+type ArticleStatus = import('../../shared/types').ArticleStatus;
+import { authenticateToken, requireRole } from '../middleware/auth.js';
 
 const router = express.Router();
 

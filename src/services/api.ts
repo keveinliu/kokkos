@@ -6,7 +6,7 @@ const API_BASE_URL = 'http://localhost:3001/api';
 // 通用请求函数
 const request = async <T>(url: string, options: RequestInit = {}): Promise<T> => {
   // 获取存储的token
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem('auth_token');
   
   const config: RequestInit = {
     headers: {
@@ -22,8 +22,8 @@ const request = async <T>(url: string, options: RequestInit = {}): Promise<T> =>
   // 处理401未授权错误（token过期或无效）
   if (response.status === 401) {
     // 清除无效token
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('user_info');
     // 跳转到登录页面
     window.location.href = '/login';
     throw new Error('Token expired or invalid');
@@ -224,8 +224,12 @@ export const imageApi = {
     const formData = new FormData();
     formData.append('image', file);
     
+    const token = localStorage.getItem('token');
     const response = await fetch(`${API_BASE_URL}/images/upload`, {
       method: 'POST',
+      headers: {
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
       body: formData,
     });
 
@@ -244,8 +248,12 @@ export const imageApi = {
       formData.append('images', file);
     });
     
+    const token = localStorage.getItem('token');
     const response = await fetch(`${API_BASE_URL}/images/upload-multiple`, {
       method: 'POST',
+      headers: {
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
       body: formData,
     });
 
@@ -341,6 +349,29 @@ export const settingsApi = {
       method: 'POST',
       body: JSON.stringify({ backup_file: backupFile, clear_existing: clearExisting }),
     });
+  },
+
+  // 文件上传恢复
+  restoreFromFile: async (file: File, clearExisting: boolean = false) => {
+    const formData = new FormData();
+    formData.append('backup', file);
+    formData.append('clear_existing', clearExisting.toString());
+
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_BASE_URL}/settings/restore`, {
+      method: 'POST',
+      headers: {
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ message: '恢复失败' }));
+      throw new Error(error.message || '恢复失败');
+    }
+
+    return response.json();
   },
 
   // 获取备份文件列表

@@ -4,7 +4,7 @@ import path from 'path';
 import fs from 'fs';
 import { promisify } from 'util';
 import crypto from 'crypto';
-import { authenticateToken } from '../middleware/auth';
+import { authenticateToken } from '../middleware/auth.js';
 
 const router = express.Router();
 const writeFile = promisify(fs.writeFile);
@@ -116,7 +116,7 @@ router.post('/upload', authenticateToken, upload.single('image'), async (req, re
 // 批量上传图片
 router.post('/upload-multiple', authenticateToken, upload.array('images', 10), async (req, res) => {
   try {
-    const files = req.files as Express.Multer.File[];
+    const files = req.files as any[];
     
     if (!files || files.length === 0) {
       return res.status(400).json({ success: false, message: '没有上传文件' });

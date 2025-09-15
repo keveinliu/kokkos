@@ -1,12 +1,19 @@
 import Database from 'better-sqlite3';
 import fs from 'fs';
 import path from 'path';
-import type { Article, Category, Tag, ArticleStatus } from '../../shared/types';
+// 在CommonJS环境中，__dirname和__filename是全局可用的
+// 不需要使用fileURLToPath和import.meta.url
+// 类型导入
+type Article = import('../../shared/types').Article;
+type Category = import('../../shared/types').Category;
+type Tag = import('../../shared/types').Tag;
+type ArticleStatus = import('../../shared/types').ArticleStatus;
 
-// CommonJS模块中__dirname已经可用
+// 在CommonJS环境中，__dirname是全局可用的
+// 不需要使用import.meta.url
 
 // 数据库文件路径 - 支持环境变量配置
-const DB_PATH = process.env.DB_PATH || path.join(process.cwd(), 'data', 'blog.db');
+const DB_PATH = process.env.DB_PATH || path.join(__dirname, 'blog.db');
 
 // 确保数据目录存在
 const dataDir = path.dirname(DB_PATH);
@@ -15,7 +22,7 @@ if (!fs.existsSync(dataDir)) {
 }
 
 class DatabaseManager {
-  private db: Database | null = null;
+  private db: ReturnType<typeof Database> | null = null;
   private initPromise: Promise<void> | null = null;
 
   constructor() {
@@ -225,5 +232,6 @@ class DatabaseManager {
 // 创建数据库实例
 const database = new DatabaseManager();
 
+// ES模块导出
 export default database;
 export { DatabaseManager };

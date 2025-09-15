@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Download, Upload, Database, Palette, Globe, User } from 'lucide-react';
 import { useTheme } from '../hooks/useTheme';
+import { settingsApi } from '../services/api';
 
 interface SystemSettings {
   site_title: string;
@@ -28,6 +29,7 @@ const Settings: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [backupStatus, setBackupStatus] = useState<string>('');
+  const [debugInfo, setDebugInfo] = useState<string>('');
 
   useEffect(() => {
     fetchSettings();
@@ -36,23 +38,20 @@ const Settings: React.FC = () => {
   const fetchSettings = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/settings');
-      if (response.ok) {
-        const data = await response.json();
-        if (data.data) {
-          // 从后端嵌套格式中提取value值，转换为前端期望的扁平格式
-          const flatSettings: SystemSettings = {
-            site_title: data.data.site_title?.value || settings.site_title,
-            site_description: data.data.site_description?.value || settings.site_description,
-            author_name: data.data.author_name?.value || settings.author_name,
-            author_email: data.data.author_email?.value || settings.author_email,
-            posts_per_page: Number(data.data.posts_per_page?.value) || settings.posts_per_page,
-            enable_comments: Boolean(data.data.enable_comments?.value) || settings.enable_comments,
-            auto_backup: Boolean(data.data.auto_backup?.value) || settings.auto_backup,
-            backup_interval: Number(data.data.backup_interval?.value) || settings.backup_interval,
-          };
-          setSettings(flatSettings);
-        }
+      const data = await settingsApi.getAll();
+      if (data.data) {
+        // 从后端嵌套格式中提取value值，转换为前端期望的扁平格式
+        const flatSettings: SystemSettings = {
+          site_title: data.data.site_title?.value || settings.site_title,
+          site_description: data.data.site_description?.value || settings.site_description,
+          author_name: data.data.author_name?.value || settings.author_name,
+          author_email: data.data.author_email?.value || settings.author_email,
+          posts_per_page: Number(data.data.posts_per_page?.value) || settings.posts_per_page,
+          enable_comments: Boolean(data.data.enable_comments?.value) || settings.enable_comments,
+          auto_backup: Boolean(data.data.auto_backup?.value) || settings.auto_backup,
+          backup_interval: Number(data.data.backup_interval?.value) || settings.backup_interval,
+        };
+        setSettings(flatSettings);
       }
     } catch (error) {
       console.error('加载设置失败:', error);
@@ -77,20 +76,8 @@ const Settings: React.FC = () => {
         backup_interval: { value: settings.backup_interval },
       };
       
-      const response = await fetch('/api/settings/batch-update', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ settings: settingsData }),
-      });
-
-      if (response.ok) {
-        alert('设置保存成功');
-      } else {
-        const errorData = await response.json();
-        throw new Error(errorData.message || '保存失败');
-      }
+      await settingsApi.batchUpdate(settingsData);
+      alert('设置保存成功');
     } catch (error) {
       console.error('保存设置失败:', error);
       alert('保存失败，请重试');
@@ -102,41 +89,28 @@ const Settings: React.FC = () => {
   const handleBackup = async () => {
     try {
       setBackupStatus('正在备份...');
-      const response = await fetch('/api/settings/backup', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          include_images: true
-        }),
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        if (result.success) {
-          // 创建下载链接
-          const backupContent = JSON.stringify({
-            version: '1.0.0',
-            timestamp: result.meta?.timestamp || new Date().toISOString(),
-            data: result.data || {}
-          }, null, 2);
-          
-          const blob = new Blob([backupContent], { type: 'application/json' });
-          const url = window.URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = result.meta?.filename || `blog-backup-${new Date().toISOString().split('T')[0]}.json`;
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          window.URL.revokeObjectURL(url);
-          setBackupStatus('备份完成');
-        } else {
-          throw new Error(result.message || '备份失败');
-        }
+      const result = await settingsApi.backup(true);
+      
+      if (result.success) {
+        // 创建下载链接
+        const backupContent = JSON.stringify({
+          version: '1.0.0',
+          timestamp: result.meta?.timestamp || new Date().toISOString(),
+          data: result.data || {}
+        }, null, 2);
+        
+        const blob = new Blob([backupContent], { type: 'application/json' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = result.meta?.filename || `blog-backup-${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+        setBackupStatus('备份完成');
       } else {
-        throw new Error('备份失败');
+        throw new Error(result.message || '备份失败');
       }
     } catch (error) {
       console.error('备份失败:', error);
@@ -156,29 +130,49 @@ const Settings: React.FC = () => {
 
     try {
       setBackupStatus('正在恢复...');
-      const formData = new FormData();
-      formData.append('backup', file);
-
-      const response = await fetch('/api/settings/restore', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (response.ok) {
-        setBackupStatus('恢复完成，请重启应用');
-        setTimeout(() => {
-          window.location.reload();
-        }, 2000);
+      
+      const result = await settingsApi.restoreFromFile(file, true);
+      
+      if (result.success) {
+        setBackupStatus('恢复成功');
+        // 重新加载设置
+        fetchSettings();
       } else {
-        throw new Error('恢复失败');
+        throw new Error(result.message || '恢复失败');
       }
     } catch (error) {
       console.error('恢复失败:', error);
       setBackupStatus('恢复失败');
     }
 
+    setTimeout(() => setBackupStatus(''), 3000);
     // 清空文件输入
     event.target.value = '';
+  }
+
+  const handleDebugAuth = () => {
+    const token = localStorage.getItem('auth_token');
+    const userInfo = localStorage.getItem('user_info');
+    const debugText = `Token: ${token ? 'exists' : 'missing'}\nUser Info: ${userInfo ? 'exists' : 'missing'}\nToken Value: ${token || 'null'}\nUser Value: ${userInfo || 'null'}`;
+    setDebugInfo(debugText);
+    console.log('Debug Auth Info:', { token, userInfo });
+  };
+
+  const handleTestAPI = async () => {
+    try {
+      const response = await fetch('http://localhost:3001/api/settings/batch-update', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+        },
+        body: JSON.stringify({ test: 'data' })
+      });
+      const result = await response.text();
+      setDebugInfo(`API Test Result: ${response.status} - ${result}`);
+    } catch (error) {
+      setDebugInfo(`API Test Error: ${error}`);
+    }
   };
 
   if (loading) {
@@ -379,6 +373,40 @@ const Settings: React.FC = () => {
             {backupStatus && (
               <div className="text-sm text-blue-600 dark:text-blue-400">
                 {backupStatus}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* 调试区域 */}
+        <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-6 shadow-sm border border-red-200 dark:border-red-800">
+          <div className="flex items-center mb-4">
+            <h2 className="text-lg font-semibold text-red-900 dark:text-red-100">
+              调试工具 (临时)
+            </h2>
+          </div>
+          
+          <div className="space-y-4">
+            <div className="flex space-x-4">
+              <button
+                onClick={handleDebugAuth}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                检查认证状态
+              </button>
+              <button
+                onClick={handleTestAPI}
+                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+              >
+                测试API调用
+              </button>
+            </div>
+            
+            {debugInfo && (
+              <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
+                <pre className="text-sm text-gray-900 dark:text-gray-100 whitespace-pre-wrap">
+                  {debugInfo}
+                </pre>
               </div>
             )}
           </div>

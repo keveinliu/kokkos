@@ -1,7 +1,8 @@
 import express from 'express';
-import type { Tag } from '../../shared/types';
-import { authenticateToken } from '../middleware/auth';
-import { authenticateAdmin } from './auth';
+// 类型导入
+type Tag = import('../../shared/types').Tag;
+import { authenticateToken, requireRole } from '../middleware/auth.js';
+import database from '../database/database.js';
 
 const router = express.Router();
 
@@ -71,7 +72,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // 创建标签
-router.post('/', authenticateAdmin, async (req, res) => {
+router.post('/', authenticateToken, requireRole(['admin']), async (req, res) => {
   try {
     const db = (req as any).db;
     const { name, color, description } = req.body;
@@ -120,7 +121,7 @@ router.post('/', authenticateAdmin, async (req, res) => {
 });
 
 // 更新标签
-router.put('/:id', authenticateAdmin, async (req, res) => {
+router.put('/:id', authenticateToken, requireRole(['admin']), async (req, res) => {
   try {
     const db = (req as any).db;
     const { id } = req.params;
@@ -162,7 +163,7 @@ router.put('/:id', authenticateAdmin, async (req, res) => {
 });
 
 // 删除标签
-router.delete('/:id', authenticateAdmin, async (req, res) => {
+router.delete('/:id', authenticateToken, requireRole(['admin']), async (req, res) => {
   try {
     const db = (req as any).db;
     const { id } = req.params;
@@ -187,7 +188,7 @@ router.delete('/:id', authenticateAdmin, async (req, res) => {
 });
 
 // 批量删除标签
-router.post('/batch-delete', authenticateAdmin, async (req, res) => {
+router.post('/batch-delete', authenticateToken, requireRole(['admin']), async (req, res) => {
   try {
     const db = (req as any).db;
     const { ids } = req.body;

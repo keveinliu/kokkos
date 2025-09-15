@@ -3,8 +3,8 @@ import fs from 'fs';
 import path from 'path';
 import multer from 'multer';
 import { promisify } from 'util';
-import database from '../database/database';
-import { authenticateToken, requireRole } from '../middleware/auth';
+import database from '../database/database.js';
+import { authenticateToken, requireRole } from '../middleware/auth.js';
 
 const router = express.Router();
 const readFile = promisify(fs.readFile);

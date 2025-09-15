@@ -5,7 +5,6 @@
     "moduleResolution": "node",
     "lib": ["ES2020"],
     "outDir": "./dist-api",
-    "rootDir": "./",
     "strict": false,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
@@ -16,10 +15,12 @@
     "declaration": false,
     "sourceMap": false,
     "removeComments": true,
+    "isolatedModules": true,
     "types": ["node", "express"]
   },
   "include": [
-    "api/**/*"
+    "api/**/*.ts",
+    "shared/**/*.ts"
   ],
   "exclude": [
     "node_modules",
