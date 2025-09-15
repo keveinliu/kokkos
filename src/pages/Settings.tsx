@@ -91,19 +91,15 @@ const Settings: React.FC = () => {
       setBackupStatus('正在备份...');
       const result = await settingsApi.backup(true);
       
-      if (result.success) {
-        // 创建下载链接
-        const backupContent = JSON.stringify({
-          version: '1.0.0',
-          timestamp: result.meta?.timestamp || new Date().toISOString(),
-          data: result.data || {}
-        }, null, 2);
+      if (result.success && result.data?.backup) {
+        // 使用API返回的完整备份数据
+        const backupContent = JSON.stringify(result.data.backup, null, 2);
         
         const blob = new Blob([backupContent], { type: 'application/json' });
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = result.meta?.filename || `blog-backup-${new Date().toISOString().split('T')[0]}.json`;
+        a.download = result.data.filename || `blog-backup-${new Date().toISOString().split('T')[0]}.json`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);

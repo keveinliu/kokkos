@@ -224,7 +224,7 @@ export const imageApi = {
     const formData = new FormData();
     formData.append('image', file);
     
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('auth_token');
     const response = await fetch(`${API_BASE_URL}/images/upload`, {
       method: 'POST',
       headers: {
@@ -248,7 +248,7 @@ export const imageApi = {
       formData.append('images', file);
     });
     
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('auth_token');
     const response = await fetch(`${API_BASE_URL}/images/upload-multiple`, {
       method: 'POST',
       headers: {
@@ -357,7 +357,7 @@ export const settingsApi = {
     formData.append('backup', file);
     formData.append('clear_existing', clearExisting.toString());
 
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('auth_token');
     const response = await fetch(`${API_BASE_URL}/settings/restore`, {
       method: 'POST',
       headers: {

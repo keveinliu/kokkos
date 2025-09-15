@@ -252,36 +252,29 @@ const ArticleEdit: React.FC = () => {
       const colors = ['#3B82F6', '#EF4444', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899', '#06B6D4', '#84CC16'];
       const randomColor = colors[Math.floor(Math.random() * colors.length)];
       
-      const response = await fetch('/api/tags', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: tagName.trim(),
-          color: randomColor
-        })
+      const result = await tagsApi.create({
+        name: tagName.trim(),
+        color: randomColor
       });
       
-      if (response.ok) {
-        const result = await response.json();
-        if (result.success) {
-          // 创建完整的标签对象
-          const newTag = {
-            id: result.data.id,
-            name: tagName.trim(),
-            color: randomColor,
-            description: null,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          };
-          setTags(prev => [...prev, newTag]);
-          setSelectedTags(prev => [...prev, newTag.id]);
-          setNewTagName('');
-        }
+      if (result.success) {
+        // 创建完整的标签对象
+        const newTag = {
+          id: result.data.id,
+          name: tagName.trim(),
+          color: randomColor,
+          description: null,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+        setTags(prev => [...prev, newTag]);
+        setSelectedTags(prev => [...prev, newTag.id]);
+        setNewTagName('');
+        toast.success('标签创建成功');
       }
     } catch (error) {
       console.error('创建标签失败:', error);
+      toast.error('创建标签失败，请重试');
     }
   };
 

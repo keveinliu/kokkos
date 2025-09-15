@@ -1,16 +1,15 @@
 import Database from 'better-sqlite3';
 import fs from 'fs';
 import path from 'path';
-// 在CommonJS环境中，__dirname和__filename是全局可用的
-// 不需要使用fileURLToPath和import.meta.url
 // 类型导入
 type Article = import('../../shared/types').Article;
 type Category = import('../../shared/types').Category;
 type Tag = import('../../shared/types').Tag;
 type ArticleStatus = import('../../shared/types').ArticleStatus;
 
-// 在CommonJS环境中，__dirname是全局可用的
-// 不需要使用import.meta.url
+// 在CommonJS环境中，__dirname和__filename是全局可用的
+// const __filename = fileURLToPath(import.meta.url);
+// const __dirname = path.dirname(__filename);
 
 // 数据库文件路径 - 支持环境变量配置
 const DB_PATH = process.env.DB_PATH || path.join(__dirname, 'blog.db');

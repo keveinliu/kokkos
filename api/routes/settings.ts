@@ -249,12 +249,16 @@ router.post('/backup', authenticateToken, requireRole(['admin']), async (req, re
     // 写入备份文件
     await writeFile(backupPath, JSON.stringify(backup, null, 2), 'utf8');
 
-    // 设置响应头，让浏览器下载文件
-    res.setHeader('Content-Type', 'application/json');
-    res.setHeader('Content-Disposition', `attachment; filename="${backupFileName}"`);
-    
-    // 直接返回备份数据供下载
-    res.send(JSON.stringify(backup, null, 2));
+    // 返回JSON响应，包含备份数据和文件信息
+    res.json({
+      success: true,
+      message: '备份创建成功',
+      data: {
+        filename: backupFileName,
+        timestamp: backup.timestamp,
+        backup: backup
+      }
+    });
   } catch (error) {
     console.error('数据备份失败:', error);
     res.status(500).json({ success: false, message: '数据备份失败' });

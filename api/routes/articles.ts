@@ -208,10 +208,13 @@ router.post('/', authenticateToken, requireRole(['admin']), async (req, res) => 
     
     if (tags && tags.length > 0) {
       for (const tagId of tags) {
-        db.run(
-          'INSERT INTO article_tags (article_id, tag_id) VALUES (?, ?)',
-          [articleId, tagId]
-        );
+        // 确保tagId是有效的数字
+        if (tagId && !isNaN(Number(tagId))) {
+          db.run(
+            'INSERT INTO article_tags (article_id, tag_id) VALUES (?, ?)',
+            [articleId, Number(tagId)]
+          );
+        }
       }
     }
 
@@ -278,10 +281,13 @@ router.put('/:id', authenticateToken, requireRole(['admin']), async (req, res) =
     
     if (tags && tags.length > 0) {
       for (const tagId of tags) {
-        db.run(
-          'INSERT INTO article_tags (article_id, tag_id) VALUES (?, ?)',
-          [id, tagId]
-        );
+        // 确保tagId是有效的数字
+        if (tagId && !isNaN(Number(tagId))) {
+          db.run(
+            'INSERT INTO article_tags (article_id, tag_id) VALUES (?, ?)',
+            [id, Number(tagId)]
+          );
+        }
       }
     }
 
