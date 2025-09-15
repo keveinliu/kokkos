@@ -34,7 +34,9 @@ const app: express.Application = express();
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
+// 静态文件服务 - 必须在API路由之前
+app.use('/uploads', express.static(path.join(__dirname, '../../uploads')));
 
 // 将数据库实例挂载到请求对象
 app.use((req: any, res, next) => {

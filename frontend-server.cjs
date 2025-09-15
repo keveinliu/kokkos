@@ -59,6 +59,48 @@ app.use('/api', (req, res, next) => {
   req.pipe(proxyReq);
 });
 
+// uploads代理中间件
+app.use('/uploads', (req, res, next) => {
+  console.log(`[UPLOADS] 处理uploads请求: ${req.method} ${req.originalUrl}`);
+  
+  const http = require('http');
+  const url = require('url');
+  
+  // 构建目标URL
+  const fullPath = req.originalUrl || req.url;
+  const targetUrl = `http://localhost:${API_PORT}${fullPath}`;
+  console.log(`[PROXY] 转发到: ${targetUrl}`);
+  
+  const options = {
+    hostname: 'localhost',
+    port: API_PORT,
+    path: fullPath,
+    method: req.method,
+    headers: req.headers
+  };
+  
+  const proxyReq = http.request(options, (proxyRes) => {
+    console.log(`[PROXY] 收到响应: ${proxyRes.statusCode}`);
+    
+    // 设置响应头
+    res.status(proxyRes.statusCode);
+    Object.keys(proxyRes.headers).forEach(key => {
+      res.set(key, proxyRes.headers[key]);
+    });
+    
+    // 转发响应数据
+    proxyRes.pipe(res);
+  });
+  
+  proxyReq.on('error', (err) => {
+    console.error('[PROXY] 请求错误:', err.message);
+    res.status(500).json({ error: 'Proxy request failed' });
+  });
+  
+  // 转发请求体
+  req.pipe(proxyReq);
+});
+
 // 设置静态文件目录
 app.use(express.static(path.join(__dirname, 'dist')));
 
