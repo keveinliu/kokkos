@@ -193,6 +193,13 @@ router.post('/batch-update', authenticateToken, requireRole(['admin']), async (r
               updated_at = ?
             WHERE key = ?
           `, [processedValue, description, now, key]);
+        } else {
+          // 如果设置不存在，则插入新记录
+          const processedValue = String(value);
+          await db.run(`
+            INSERT INTO settings (key, value, description, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?)
+          `, [key, processedValue, description || null, now, now]);
         }
       }
 

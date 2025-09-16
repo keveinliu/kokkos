@@ -12,6 +12,7 @@ interface SystemSettings {
   enable_comments: boolean;
   auto_backup: boolean;
   backup_interval: number;
+  icp_number: string;
 }
 
 const Settings: React.FC = () => {
@@ -25,6 +26,7 @@ const Settings: React.FC = () => {
     enable_comments: false,
     auto_backup: true,
     backup_interval: 7,
+    icp_number: '',
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -50,6 +52,7 @@ const Settings: React.FC = () => {
           enable_comments: Boolean(data.data.enable_comments?.value) || settings.enable_comments,
           auto_backup: Boolean(data.data.auto_backup?.value) || settings.auto_backup,
           backup_interval: Number(data.data.backup_interval?.value) || settings.backup_interval,
+          icp_number: data.data.icp_number?.value || settings.icp_number,
         };
         setSettings(flatSettings);
       }
@@ -74,6 +77,7 @@ const Settings: React.FC = () => {
         enable_comments: { value: settings.enable_comments },
         auto_backup: { value: settings.auto_backup },
         backup_interval: { value: settings.backup_interval },
+        icp_number: { value: settings.icp_number },
       };
       
       await settingsApi.batchUpdate(settingsData);
@@ -236,6 +240,19 @@ const Settings: React.FC = () => {
                 onChange={(e) => setSettings(prev => ({ ...prev, site_description: e.target.value }))}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 rows={3}
+              />
+            </div>
+            
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                网站备案号
+              </label>
+              <input
+                type="text"
+                value={settings.icp_number}
+                onChange={(e) => setSettings(prev => ({ ...prev, icp_number: e.target.value }))}
+                placeholder="请输入网站备案号，如：京ICP备12345678号"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               />
             </div>
           </div>

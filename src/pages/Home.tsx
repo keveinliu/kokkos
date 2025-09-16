@@ -16,6 +16,7 @@ const Home: React.FC = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [postsPerPage, setPostsPerPage] = useState(10);
   const [siteDescription, setSiteDescription] = useState('记录生活，分享思考');
+  const [siteTitle, setSiteTitle] = useState('芥子博客');
 
   useEffect(() => {
     fetchSettings();
@@ -39,6 +40,11 @@ const Home: React.FC = () => {
         const siteDescriptionSetting = response.data.site_description;
         if (siteDescriptionSetting && siteDescriptionSetting.value) {
           setSiteDescription(siteDescriptionSetting.value);
+        }
+        
+        const siteTitleSetting = response.data.site_title;
+        if (siteTitleSetting && siteTitleSetting.value) {
+          setSiteTitle(siteTitleSetting.value);
         }
       }
     } catch (error) {
@@ -131,7 +137,7 @@ const Home: React.FC = () => {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            芥子博客
+            {siteTitle}
           </h1>
           <p className="text-gray-600 dark:text-gray-400 mt-1">
             {siteDescription}

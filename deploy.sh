@@ -52,20 +52,20 @@ mkdir -p deploy-package/uploads
 mkdir -p deploy-package/backups
 
 # 复制现有数据（如果存在）
-if [ -d "data" ]; then
-    echo "📊 复制现有数据..."
-    cp -r data/* deploy-package/data/ 2>/dev/null || echo "⚠️ 数据目录为空"
-fi
-
-if [ -d "uploads" ]; then
-    echo "🖼️ 复制上传文件..."
-    cp -r uploads/* deploy-package/uploads/ 2>/dev/null || echo "⚠️ uploads目录为空"
-fi
-
-if [ -d "backups" ]; then
-    echo "💾 复制备份文件..."
-    cp -r backups/* deploy-package/backups/ 2>/dev/null || echo "⚠️ backups目录为空"
-fi
+#if [ -d "data" ]; then
+#    echo "📊 复制现有数据..."
+#    cp -r data/* deploy-package/data/ 2>/dev/null || echo "⚠️ 数据目录为空"
+#fi
+#
+#if [ -d "uploads" ]; then
+#    echo "🖼️ 复制上传文件..."
+#    cp -r uploads/* deploy-package/uploads/ 2>/dev/null || echo "⚠️ uploads目录为空"
+#fi
+#
+#if [ -d "backups" ]; then
+#    echo "💾 复制备份文件..."
+#    cp -r backups/* deploy-package/backups/ 2>/dev/null || echo "⚠️ backups目录为空"
+#fi
 
 # 创建部署说明文件
 cat > deploy-package/DEPLOY.md << 'EOF'

@@ -13,9 +13,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const location = useLocation();
   const { theme, toggleTheme } = useTheme();
   const [siteTitle, setSiteTitle] = useState('芥子博客');
+  const [icpNumber, setIcpNumber] = useState('');
 
   useEffect(() => {
-    const fetchSiteTitle = async () => {
+    const fetchSiteSettings = async () => {
       try {
         const response = await settingsApi.getAll();
         if (response.success && response.data) {
@@ -23,13 +24,18 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           if (siteTitleSetting && siteTitleSetting.value) {
             setSiteTitle(siteTitleSetting.value);
           }
+          
+          const icpNumberSetting = response.data.icp_number;
+          if (icpNumberSetting && icpNumberSetting.value) {
+            setIcpNumber(icpNumberSetting.value);
+          }
         }
       } catch (error) {
-        console.error('获取站点标题失败:', error);
+        console.error('获取站点设置失败:', error);
       }
     };
 
-    fetchSiteTitle();
+    fetchSiteSettings();
   }, []);
 
   const navigation = [
@@ -161,8 +167,26 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
         {/* 页面内容 */}
         <main className="flex-1 overflow-auto">
-          <div className="h-full">
-            {children}
+          <div className="min-h-full flex flex-col">
+            <div className="flex-1">
+              {children}
+            </div>
+            
+            {/* Footer */}
+            {icpNumber && (
+              <footer className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 py-4">
+                <div className="text-center text-sm text-gray-500 dark:text-gray-400">
+                  <a 
+                    href="https://beian.miit.gov.cn/" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+                  >
+                    {icpNumber}
+                  </a>
+                </div>
+              </footer>
+            )}
           </div>
         </main>
       </div>

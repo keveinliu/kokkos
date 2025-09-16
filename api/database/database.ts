@@ -1,6 +1,7 @@
 import Database from 'better-sqlite3';
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
 // 类型导入
 type Article = import('../../shared/types').Article;
 type Category = import('../../shared/types').Category;
