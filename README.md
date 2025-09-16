@@ -1,6 +1,7 @@
 # 芥子博客
 
 一个基于 React + TypeScript + Electron 的现代化个人博客系统，支持 Markdown 编辑、文章管理、分类标签、图片上传等功能。
+Powered by (TRAE)[https://www.trae.ai/]
 
 ## 功能特性
 
